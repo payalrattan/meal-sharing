@@ -50,7 +50,7 @@ app.get('/past-meals', async (req, res) => {
 app.get('/all-meals', async (req, res) => {
   try {
     const [meals] = await knex.raw("SELECT * FROM meal ORDER BY id");
-    res.json(meals);
+    res.json(meals); // returns [] if no meals
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -60,7 +60,10 @@ app.get('/all-meals', async (req, res) => {
 app.get('/first-meal', async (req, res) => {
   try {
     const [meals] = await knex.raw("SELECT * FROM meal ORDER BY id ASC LIMIT 1");
-    res.json(meals[0] || {});
+    if (!meals.length) {
+      return res.status(404).json({ error: "There are no meals." });
+    }
+    res.json(meals[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -70,7 +73,10 @@ app.get('/first-meal', async (req, res) => {
 app.get('/last-meal', async (req, res) => {
   try {
     const [meals] = await knex.raw("SELECT * FROM meal ORDER BY id DESC LIMIT 1");
-    res.json(meals[0] || {});
+    if (!meals.length) {
+      return res.status(404).json({ error: "There are no meals." });
+    }
+    res.json(meals[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -78,29 +84,21 @@ app.get('/last-meal', async (req, res) => {
 
 // POST route to insert data
 app.post('/mealsinfo', async (req, res) => {
-  const { title, description, location, when, created_date, max_reservations, price } = req.body;
-  if (!title || !description || !location || !when || !max_reservations || !price) {
-    return res.status(400).send('All fields are required');
+  const meals = req.body.meal;
+  if (!Array.isArray(meals) || meals.length === 0) {
+    return res.status(400).send('Request body must have a non-empty "meal" array');
   }
   try {
-    await knex("meal").insert([
-      {
-        title,
-        description,
-        location,
-        when,
-        created_date: created_date || knex.fn.now(),
-        max_reservations,
-        price
-      }
-    ]);
-
-    res.send(' User saved successfully');
+    await knex("meal").insert(meals);
+    res.send('Meals saved successfully');
   } catch (err) {
-    console.error(' Error:', err);
+    console.error('Error:', err);
     res.status(500).send('Error saving data');
   }
 });
+
+const meals = await knex.raw("SELECT * FROM Meal");
+console.log(meals);
 
 app.listen(port, () => {
   console.log(`Listening on http://localhost:${port}`);
