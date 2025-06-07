@@ -1,6 +1,8 @@
 import "dotenv/config";
 import express from 'express';
 import knex from './database_client.js';
+import mealsRouter from "./routers/meals.js";
+import reservationRouter from './routers/reservations.js';
 
 // Test database connection
 knex.raw('SELECT 1')
@@ -25,6 +27,8 @@ app.get('/', async (req, res) => {
   });
 });
 
+//Respond with all meals in the future (relative to the when datetime)
+
 app.get('/future-meals', async (req, res) => {
   try {
     const [meals] = await knex.raw("SELECT * FROM meal WHERE `when` > NOW()");
@@ -36,7 +40,7 @@ app.get('/future-meals', async (req, res) => {
 });
 
 
-// /past-meals: Meals in the past
+//Respond with all meals in the past (relative to the when datetime)
 app.get('/past-meals', async (req, res) => {
   try {
     const [meals] = await knex.raw("SELECT * FROM meal WHERE `when` < NOW()");
@@ -46,7 +50,7 @@ app.get('/past-meals', async (req, res) => {
   }
 });
 
-// /all-meals: All meals sorted by id
+//Respond with all meals sorted by ID
 app.get('/all-meals', async (req, res) => {
   try {
     const [meals] = await knex.raw("SELECT * FROM meal ORDER BY id");
@@ -56,7 +60,7 @@ app.get('/all-meals', async (req, res) => {
   }
 });
 
-// /first-meal: Meal with the minimum id
+//Respond with the first meal (meaning with the minimum id)
 app.get('/first-meal', async (req, res) => {
   try {
     const [meals] = await knex.raw("SELECT * FROM meal ORDER BY id ASC LIMIT 1");
@@ -69,7 +73,8 @@ app.get('/first-meal', async (req, res) => {
   }
 });
 
-// /last-meal: Meal with the maximum id
+//Respond with the last meal (meaning with the maximum id)
+
 app.get('/last-meal', async (req, res) => {
   try {
     const [meals] = await knex.raw("SELECT * FROM meal ORDER BY id DESC LIMIT 1");
@@ -82,23 +87,9 @@ app.get('/last-meal', async (req, res) => {
   }
 });
 
-// POST route to insert data
-app.post('/mealsinfo', async (req, res) => {
-  const meals = req.body.meal;
-  if (!Array.isArray(meals) || meals.length === 0) {
-    return res.status(400).send('Request body must have a non-empty "meal" array');
-  }
-  try {
-    await knex("meal").insert(meals);
-    res.send('Meals saved successfully');
-  } catch (err) {
-    console.error('Error:', err);
-    res.status(500).send('Error saving data');
-  }
-});
-
-const meals = await knex.raw("SELECT * FROM Meal");
-console.log(meals);
+//routers 
+app.use('/meals', mealsRouter);
+app.use('/reservations', reservationRouter);
 
 app.listen(port, () => {
   console.log(`Listening on http://localhost:${port}`);
