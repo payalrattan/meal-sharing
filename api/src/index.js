@@ -4,15 +4,6 @@ import knex from './database_client.js';
 import mealsRouter from "./routers/meals.js";
 import reservationRouter from './routers/reservations.js';
 
-// Test database connection
-knex.raw('SELECT 1')
-  .then(() => {
-    console.log('Database connection successful!');
-  })
-  .catch((err) => {
-    console.error('Database connection failed:', err);
-  });
-
 const app = express();
 const port = process.env.PORT || 3000;
 
