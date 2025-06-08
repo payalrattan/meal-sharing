@@ -4,7 +4,7 @@ import knex from '../database_client.js';
 
 const mealsRouter = express.Router();
 
-// Returns all meals
+// Returns all meals/*  
 mealsRouter.get('/', async (req, res) => {
   try {
     const [meals] = await knex.raw('SELECT * FROM meal');

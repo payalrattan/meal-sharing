@@ -9,14 +9,7 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Test GET route
-app.get('/', async (req, res) => {
-  const [rows] = await knex.raw('SELECT VERSION()');
-  res.json({
-    nodeVersion: process.version,
-    mysqlVersion: rows[0]['VERSION()']
-  });
-});
+
 
 // Routers
 app.use('/meals', mealsRouter);
