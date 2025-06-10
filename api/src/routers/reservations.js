@@ -30,4 +30,31 @@ reservationRouter.post('/', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+// Updates the reservation by id
+reservationRouter.put('/:id', async (req, res) => {
+    try {
+        const updated = await knex('reservation').where({ id: req.params.id }).update(req.body);
+        if (!updated) {
+            return res.status(404).json({ error: 'Reservation not found' });
+        }
+        res.json({ message: 'Reservation updated' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Deletes the reservation by id
+reservationRouter.delete('/:id', async (req, res) => {
+    try {
+        const deleted = await knex('reservation').where({ id: req.params.id }).del();
+        if (!deleted) {
+            return res.status(404).json({ error: 'Reservation not found' });
+        }
+        res.json({ message: 'Reservation deleted' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 export default reservationRouter;

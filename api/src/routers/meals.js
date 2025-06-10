@@ -4,16 +4,6 @@ import knex from '../database_client.js';
 
 const mealsRouter = express.Router();
 
-// Returns all meals/*  
-mealsRouter.get('/', async (req, res) => {
-  try {
-    const [meals] = await knex.raw('SELECT * FROM meal');
-    res.json(meals);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // Returns all meals in the future
 mealsRouter.get('/future-meals', async (req, res) => {
   try {
@@ -83,11 +73,58 @@ mealsRouter.get('/:id', async (req, res) => {
   }
 });
 
+
 // Adds a new meal to the database
 mealsRouter.post('/', async (req, res) => {
   try {
     await knex('meal').insert(req.body);
     res.status(201).json({ Message: 'Meal created' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Updates the meal by id
+mealsRouter.put('/:id', async (req, res) => {
+  try {
+    const updated = await knex('meal').where({ id: req.params.id }).update(req.body);
+    if (!updated) {
+      return res.status(404).json({ error: 'Meal not found' });
+    }
+    res.json({ message: 'Meal updated' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Deletes the meal by id
+mealsRouter.delete('/:id', async (req, res) => {
+  try {
+    const deleted = await knex('meal').where({ id: req.params.id }).del();
+    if (!deleted) {
+      return res.status(404).json({ error: 'Meal not found' });
+    }
+    res.json({ message: 'Meal deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// 	Returns all meals that are cheaper than maxPrice.
+mealsRouter.get('/price', async (req, res) => {
+  try {
+    const { maxPrice } = req.query;
+    console.log('maxPrice:', maxPrice);
+    let meals;
+    if (maxPrice) {
+      const priceNum = Number(maxPrice);
+      if (isNaN(priceNum)) {
+        return res.status(400).json({ error: 'maxPrice must be a number' });
+      }
+      [meals] = await knex.raw('SELECT * FROM meal WHERE price < ?', [priceNum]);
+    } else {
+      [meals] = await knex.raw('SELECT * FROM meal');
+    }
+    res.json(meals);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
