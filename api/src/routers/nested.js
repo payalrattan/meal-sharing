@@ -1,9 +1,9 @@
 import express from "express";
 
-// This router can be deleted once you add your own router
+//test router
 const nestedRouter = express.Router();
 
-nestedRouter.get("/", (req, res) => {
+nestedRouter.get("/after", (req, res) => {
   res.json({ message: "Hello nested router" });
 });
 
